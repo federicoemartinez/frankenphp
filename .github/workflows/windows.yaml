@@ -119,7 +119,10 @@ jobs:
         run: |
           # InvGate fork: pin to a specific PHP 8.4.x release. Bump this on schedule
           # (every PHP 8.4 patch release that we want to ship).
-          $version = "8.4.16"
+          # Note: 8.4.16 had a header bug (zend_call_stack.h missing #include <intrin.h>
+          # under _MSC_VER) that broke clang builds; fixed in 8.4.17. Using 8.4.20
+          # (current latest 8.4.x at time of pin).
+          $version = "8.4.20"
           Write-Host "Using pinned PHP version: $version"
 
           "PHP_VERSION=$version" >> $env:GITHUB_ENV
