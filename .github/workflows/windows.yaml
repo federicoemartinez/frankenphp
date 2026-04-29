@@ -35,7 +35,9 @@ env:
   GOTOOLCHAIN: local
   GOTESTSUM_FORMAT: pkgname-and-test-fails
   GOFLAGS: "-ldflags=-extldflags=-fuse-ld=lld -tags=nobadger,nomysql,nopgx"
-  PHP_DOWNLOAD_BASE: "https://downloads.php.net/~windows/releases/"
+  # InvGate fork: archives URL holds older PHP releases (incl. 8.4.x).
+  # Latest-only URL was: https://downloads.php.net/~windows/releases/
+  PHP_DOWNLOAD_BASE: "https://downloads.php.net/~windows/releases/archives/"
   CC: clang
   CXX: clang++
 
@@ -115,15 +117,10 @@ jobs:
 
       - name: Download PHP
         run: |
-          $webContent = Invoke-WebRequest -Uri $env:PHP_DOWNLOAD_BASE
-          $links = $webContent.Links.Href | Where-Object { $_ -match "php-\d+\.\d+\.\d+-Win32-vs17-x64\.zip$" }
-
-          if (-not $links) { throw "Could not find PHP zip files at $env:PHP_DOWNLOAD_BASE" }
-
-          $latestFile = $links | Sort-Object { if ($_ -match '(\d+\.\d+\.\d+)') { [version]$matches[1] } } | Select-Object -Last 1
-
-          $version = if ($latestFile -match '(\d+\.\d+\.\d+)') { $matches[1] }
-          Write-Host "Detected latest PHP version: $version"
+          # InvGate fork: pin to a specific PHP 8.4.x release. Bump this on schedule
+          # (every PHP 8.4 patch release that we want to ship).
+          $version = "8.4.16"
+          Write-Host "Using pinned PHP version: $version"
 
           "PHP_VERSION=$version" >> $env:GITHUB_ENV
 
