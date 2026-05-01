@@ -14,6 +14,7 @@ require (
 	github.com/dunglas/mercure v0.22.1
 	github.com/dunglas/mercure/caddy v0.22.1
 	github.com/dunglas/vulcain/caddy v1.4.0
+	github.com/federicoemartinez/caddy-sspi v0.0.0-20260501122626-39e5a52b0c1e
 	github.com/prometheus/client_golang v1.23.2
 	github.com/spf13/cobra v1.10.2
 	github.com/stretchr/testify v1.11.1
@@ -41,6 +42,7 @@ require (
 	github.com/MicahParks/keyfunc/v3 v3.8.0 // indirect
 	github.com/RoaringBitmap/roaring/v2 v2.16.0 // indirect
 	github.com/alecthomas/chroma/v2 v2.23.1 // indirect
+	github.com/alexbrainman/sspi v0.0.0-20250919150558-7d374ff0d59e // indirect
 	github.com/antlr4-go/antlr/v4 v4.13.1 // indirect
 	github.com/aryann/difflib v0.0.0-20210328193216-ff5ff6dc229b // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
