@@ -117,13 +117,17 @@ jobs:
 
       - name: Download PHP
         run: |
-          # InvGate fork: pin to a specific PHP 8.4.x release. Bump this on schedule
-          # (every PHP 8.4 patch release that we want to ship).
+          # InvGate fork: stay on the 8.4.x line for the InvGate Service Desk pilot,
+          # but auto-detect the latest 8.4.x patch from the archives index so CI
+          # always exercises the newest 8.4 release.
           # Note: 8.4.16 had a header bug (zend_call_stack.h missing #include <intrin.h>
-          # under _MSC_VER) that broke clang builds; fixed in 8.4.17. Using 8.4.20
-          # (current latest 8.4.x at time of pin).
-          $version = "8.4.20"
-          Write-Host "Using pinned PHP version: $version"
+          # under _MSC_VER) that broke clang builds; fixed in 8.4.17.
+          $webContent = Invoke-WebRequest -Uri $env:PHP_DOWNLOAD_BASE
+          $links = $webContent.Links.Href | Where-Object { $_ -match "php-8\.4\.\d+-Win32-vs17-x64\.zip$" }
+          if (-not $links) { throw "Could not find PHP 8.4.x zip files at $env:PHP_DOWNLOAD_BASE" }
+          $latestFile = $links | Sort-Object { if ($_ -match '(\d+\.\d+\.\d+)') { [version]$matches[1] } } | Select-Object -Last 1
+          $version = if ($latestFile -match '(\d+\.\d+\.\d+)') { $matches[1] }
+          Write-Host "Detected latest PHP 8.4.x version: $version"
 
           "PHP_VERSION=$version" >> $env:GITHUB_ENV
 
@@ -226,7 +230,11 @@ jobs:
 
       - name: Run Tests
         run: |
-          "opcache.enable=0`r`nopcache.enable_cli=0" | Out-File php.ini
+          # PHP 8.5 always loads opcache; on 8.4 it's a separate DLL that must
+          # be loaded explicitly, otherwise tests like TestEnvVarsInPhpIni see
+          # ini_get('opcache.enable') return false.
+          $opcacheDll = "$env:GITHUB_WORKSPACE\$env:DIR_NAME\ext\php_opcache.dll"
+          "zend_extension=$opcacheDll`r`nopcache.enable=0`r`nopcache.enable_cli=0" | Out-File php.ini
           $env:PHPRC = Get-Location
 
           go install gotest.tools/gotestsum@latest
